@@ -4,6 +4,21 @@
 
 Talk to Will Byers from Stranger Things through LED Christmas lights! This recreates the iconic scene where Will communicates from the Upside Down using individually addressable LEDs.
 
+**Project History:** I originally built this in May 2022 for Stranger Things Season 4, with plans to integrate voice activation using Amazon's Alexa Gadgets API (similar to my [Alexa-enabled Lego Mindstorms maze solver](https://www.hackster.io/kyle22/dwr-an-alexa-voice-enabled-maze-solving-lego-robot-405dbf)). Unfortunately, Amazon discontinued the Alexa Gadgets API before I could complete the integration. With Season 5 on the horizon and the massive improvements in LLMs and speech-to-text technology, I decided to revisit the project—this time with Claude AI bringing Will Byers to life through natural conversation.
+
+## Build Gallery
+
+The complete build process, from planning to final installation:
+
+![Engineering Notebook](./assets/images/engineering_notebook_entry.png)
+*Initial planning and LED mapping in the engineering notebook*
+
+![Painting the Alphabet](./assets/images/painting_the_alphabet.jpg)
+*Hand-painting letters on the wall for LED positioning*
+
+![Full Color Wall](./assets/images/full_color_wall.jpg)
+*The completed installation with all LEDs positioned and tested*
+
 ## Installation
 
 ```bash
