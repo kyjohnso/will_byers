@@ -10,28 +10,46 @@ import whisper
 import numpy as np
 import tempfile
 import os
+import threading
 
 # Recording parameters
-DURATION = 5  # seconds
 SAMPLE_RATE = 48000  # 48kHz (USB mic requirement, Whisper will resample internally)
 CHANNELS = 1  # mono
 
-def record_audio(duration=DURATION):
-    """Record audio for the specified duration."""
-    print(f"\n🎤 Recording for {duration} seconds...")
-    print("SPEAK NOW!")
+def record_audio_until_enter():
+    """Record audio until user presses Enter."""
+    print("\n🎤 Recording... Press ENTER to stop!")
 
-    audio_data = sd.rec(
-        int(duration * SAMPLE_RATE),
+    # Storage for recorded chunks
+    recording = []
+    stop_event = threading.Event()
+
+    def audio_callback(indata, frames, time, status):
+        """This is called for each audio block."""
+        if status:
+            print(status)
+        recording.append(indata.copy())
+
+    # Start recording in a stream
+    stream = sd.InputStream(
         samplerate=SAMPLE_RATE,
         channels=CHANNELS,
-        dtype=np.int16
+        dtype=np.int16,
+        callback=audio_callback
     )
 
-    sd.wait()
+    with stream:
+        # Wait for user to press Enter
+        input()
 
-    print("✓ Recording finished!")
-    return audio_data
+    print("✓ Recording stopped!")
+
+    # Concatenate all chunks into one array
+    if recording:
+        audio_data = np.concatenate(recording, axis=0)
+        return audio_data
+    else:
+        return np.array([], dtype=np.int16)
 
 def transcribe_audio(audio_data, model):
     """Transcribe audio using Whisper."""
@@ -64,14 +82,14 @@ if __name__ == "__main__":
     while True:
         try:
             # Ask user if they want to record
-            user_input = input("\nPress ENTER to record, or type 'quit' to exit: ").strip()
+            user_input = input("\nPress ENTER to start recording (or type 'quit' to exit): ").strip()
 
             if user_input.lower() in ['quit', 'exit', 'q']:
                 print("👋 Goodbye!")
                 break
 
             # Record audio
-            audio = record_audio()
+            audio = record_audio_until_enter()
 
             # Transcribe
             transcription = transcribe_audio(audio, model)

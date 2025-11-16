@@ -7,6 +7,7 @@ import scipy.io.wavfile as wavfile
 import whisper
 import tempfile
 import time
+import threading
 from pathlib import Path
 from anthropic import Anthropic
 
@@ -73,7 +74,6 @@ colors = [
 # Audio recording configuration
 SAMPLE_RATE = 48000  # 48kHz (USB mic requirement, Whisper will resample internally)
 CHANNELS = 1
-RECORDING_DURATION = 5  # seconds
 
 def play_pixel(i, color, duration):
     """Light up a specific LED with a color for a duration, then turn it off."""
@@ -107,21 +107,39 @@ def flash_message(message):
 
     pixels.fill((0, 0, 0))
 
-def record_audio(duration=RECORDING_DURATION):
-    """Record audio from the microphone."""
-    print(f"🎤 Recording for {duration} seconds... SPEAK NOW!")
+def record_audio_until_enter():
+    """Record audio until user presses Enter."""
+    print("\n🎤 Recording... Press ENTER to stop!")
 
-    audio_data = sd.rec(
-        int(duration * SAMPLE_RATE),
+    # Storage for recorded chunks
+    recording = []
+
+    def audio_callback(indata, frames, time, status):
+        """This is called for each audio block."""
+        if status:
+            print(status)
+        recording.append(indata.copy())
+
+    # Start recording in a stream
+    stream = sd.InputStream(
         samplerate=SAMPLE_RATE,
         channels=CHANNELS,
-        dtype=np.int16
+        dtype=np.int16,
+        callback=audio_callback
     )
 
-    sd.wait()
-    print("✓ Recording finished!")
+    with stream:
+        # Wait for user to press Enter
+        input()
 
-    return audio_data
+    print("✓ Recording stopped!")
+
+    # Concatenate all chunks into one array
+    if recording:
+        audio_data = np.concatenate(recording, axis=0)
+        return audio_data
+    else:
+        return np.array([], dtype=np.int16)
 
 def transcribe_audio(audio_data, model):
     """Transcribe audio using Whisper."""
@@ -180,8 +198,9 @@ def main():
     print("=" * 60)
     print("🎙️  Will Byers Voice Chat")
     print("=" * 60)
-    print("Press ENTER to start recording, speak your message,")
-    print("and Will will respond through the lights!")
+    print("Press ENTER to start recording.")
+    print("Speak your message, then press ENTER to stop.")
+    print("Will will respond through the lights!")
     if LED_AVAILABLE:
         print("Responses will be flashed on the LEDs.")
     else:
@@ -201,7 +220,7 @@ def main():
     while True:
         try:
             # Wait for user to press Enter
-            user_input = input("\nPress ENTER to record (or type 'quit' to exit): ").strip()
+            user_input = input("\nPress ENTER to start recording (or type 'quit' to exit): ").strip()
 
             if user_input.lower() in ['quit', 'exit']:
                 print("👋 Goodbye!")
@@ -210,7 +229,7 @@ def main():
                 break
 
             # Record audio
-            audio = record_audio()
+            audio = record_audio_until_enter()
 
             # Transcribe
             transcription = transcribe_audio(audio, model)
