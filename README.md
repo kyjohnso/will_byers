@@ -115,7 +115,49 @@ sudo $(which will-byers-chat)
 
 Talk to Will Byers using your voice! The voice chat uses Whisper for speech-to-text transcription.
 
-#### Local Transcription (on Raspberry Pi)
+#### Wake Word Voice Chat (Hands-Free)
+
+The wake word voice chat allows you to activate Will by saying "will" (or a custom wake word). This uses Pocketsphinx for local wake word detection on the Raspberry Pi.
+
+**First, install Pocketsphinx:**
+```bash
+# Activate your virtual environment first
+source venv/bin/activate
+
+# Install pocketsphinx
+pip install pocketsphinx
+```
+
+**Run the wake word chat:**
+```bash
+# Run with sudo using the venv Python
+sudo $(which python) -m will_byers.wake_word_voice_chat
+# Or if you installed as a script:
+sudo $(which will-byers-wake-word-chat)
+```
+
+**Features:**
+- Say "will" to activate (lights will flash to acknowledge)
+- Automatically records for 5 seconds after wake word
+- Supports both local and remote Whisper transcription
+- Customizable wake word and sensitivity
+
+**Advanced options:**
+```bash
+# Use remote Whisper server for faster transcription
+sudo $(which will-byers-wake-word-chat) --remote-whisper http://192.168.1.100:5000
+
+# Custom wake word
+sudo $(which will-byers-wake-word-chat) --wake-word "hey will"
+
+# Adjust sensitivity (lower = more sensitive)
+sudo $(which will-byers-wake-word-chat) --sensitivity 1e-25
+
+# Change recording duration after wake word
+sudo $(which will-byers-wake-word-chat) --record-duration 10
+```
+
+#### Manual Voice Chat (Press Enter to Record)
 
 ```bash
 # Activate your virtual environment first
@@ -169,12 +211,17 @@ Available models: `tiny`, `base`, `small`, `medium`, `large` (larger = more accu
 sudo $(which will-byers-voice-chat) --remote-whisper http://192.168.1.100:5000
 
 # Replace 192.168.1.100 with your GPU machine's IP address
+
+# Or use with wake word chat
+sudo $(which will-byers-wake-word-chat) --remote-whisper http://192.168.1.100:5000
 ```
 
 The remote server will:
 - Use GPU acceleration for faster transcription
 - Reduce CPU load on the Raspberry Pi
 - Provide better transcription accuracy with larger models
+
+**Note:** The wake word detection always runs locally on the Pi (using Pocketsphinx), only the speech-to-text transcription can be offloaded to the remote server.
 
 ### Static Message Demo
 
