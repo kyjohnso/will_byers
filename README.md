@@ -89,6 +89,14 @@ The mapping tool will:
 
 **Note:** If you don't create a custom mapping, the system will use the default hardcoded mapping from the original project.
 
+## Creating Your Letter to Light Mapping
+
+The mapping tool helps you create a custom mapping between letters (A-Z) and their corresponding LED positions on your strip. The tool lights up each LED one at a time and prompts you to identify which letter is at that position. The mapping is saved to [`led_mapping.json`](led_mapping.json:1) and can be resumed if interrupted.
+
+Before mapping, make sure you've painted or positioned your letters on the wall and installed your LED strip.
+
+The tool is interactive and self-explanatory - just follow the on-screen prompts to map each letter to its LED position.
+
 ## Usage
 
 ### Interactive Chat
