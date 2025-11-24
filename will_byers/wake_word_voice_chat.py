@@ -522,8 +522,8 @@ def main():
 
     print(f"\n🎧 Ready! Say '{args.wake_word}' to start...\n")
 
-    while True:
-        try:
+    try:
+        while True:
             # Listen for wake word
             wake_word_detected = listen_for_wake_word(
                 wake_word=args.wake_word,
@@ -531,7 +531,8 @@ def main():
             )
             
             if not wake_word_detected:
-                continue
+                # User pressed Ctrl+C during wake word listening
+                break
             
             # Flash lights to acknowledge wake word
             quick_flash_acknowledgment()
@@ -565,16 +566,14 @@ def main():
             
             # Ready for next wake word
             print(f"\n👂 Listening for wake word: '{args.wake_word}'...\n")
-
-        except KeyboardInterrupt:
-            print("\n\n👋 Interrupted by user. Goodbye!")
-            if LED_AVAILABLE and pixels is not None:
-                pixels.fill((0, 0, 0))
-            break
-        except Exception as e:
-            print(f"\n❌ Error: {e}")
-            print("Please try again.")
-            print(f"\n👂 Listening for wake word: '{args.wake_word}'...\n")
+            
+    except KeyboardInterrupt:
+        print("\n\n👋 Interrupted by user. Goodbye!")
+        if LED_AVAILABLE and pixels is not None:
+            pixels.fill((0, 0, 0))
+    except Exception as e:
+        print(f"\n❌ Error: {e}")
+        print("Please try again.")
 
 if __name__ == "__main__":
     main()
