@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import os
+import sys
+import argparse
 import numpy as np
 import sounddevice as sd
 import scipy.io.wavfile as wavfile
@@ -9,6 +11,7 @@ import tempfile
 import time
 import threading
 import random
+import requests
 from pathlib import Path
 from anthropic import Anthropic
 from .led_config import load_led_mapping_with_fallback
@@ -186,9 +189,9 @@ def record_audio_until_enter():
     else:
         return np.array([], dtype=np.int16)
 
-def transcribe_audio(audio_data, model):
-    """Transcribe audio using Whisper."""
-    print("🔄 Transcribing...")
+def transcribe_audio_local(audio_data, model):
+    """Transcribe audio using local Whisper model."""
+    print("🔄 Transcribing locally...")
 
     # Save to temporary file (Whisper needs a file)
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
@@ -199,6 +202,40 @@ def transcribe_audio(audio_data, model):
         result = model.transcribe(temp_path, language="en")
         transcription = result["text"].strip()
         return transcription
+    finally:
+        # Clean up temp file
+        os.unlink(temp_path)
+
+
+def transcribe_audio_remote(audio_data, server_url):
+    """Transcribe audio using remote Whisper server."""
+    print(f"🔄 Transcribing via remote server ({server_url})...")
+
+    # Save to temporary file
+    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+        temp_path = f.name
+        wavfile.write(temp_path, SAMPLE_RATE, audio_data)
+
+    try:
+        # Send audio to remote server
+        with open(temp_path, 'rb') as audio_file:
+            files = {'audio': ('audio.wav', audio_file, 'audio/wav')}
+            data = {'language': 'en'}
+            
+            response = requests.post(
+                f"{server_url}/transcribe",
+                files=files,
+                data=data,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                transcription = result.get('text', '').strip()
+                return transcription
+            else:
+                raise Exception(f"Server returned error: {response.status_code} - {response.text}")
+    
     finally:
         # Clean up temp file
         os.unlink(temp_path)
@@ -242,6 +279,20 @@ def get_claude_response(user_message):
 
 def main():
     """Main loop: record audio, transcribe, get Claude response, flash on LEDs."""
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(
+        description='Will Byers Voice Chat - Communicate through the lights!'
+    )
+    parser.add_argument(
+        '--remote-whisper',
+        type=str,
+        default=None,
+        metavar='URL',
+        help='URL of remote Whisper server (e.g., http://192.168.1.100:5000)'
+    )
+    
+    args = parser.parse_args()
+    
     print("=" * 60)
     print("🎙️  Will Byers Voice Chat")
     print("=" * 60)
@@ -255,10 +306,29 @@ def main():
     print("Type 'quit' or 'exit' then press ENTER to stop.")
     print("=" * 60)
 
-    # Load Whisper model once at startup
-    print("\n📥 Loading Whisper model (this may take a moment)...")
-    model = whisper.load_model("base")
-    print("✓ Model loaded!\n")
+    # Setup transcription method
+    model = None
+    remote_server = args.remote_whisper
+    
+    if remote_server:
+        print(f"\n🌐 Using remote Whisper server: {remote_server}")
+        # Test connection to remote server
+        try:
+            response = requests.get(f"{remote_server}/health", timeout=5)
+            if response.status_code == 200:
+                health = response.json()
+                print(f"✓ Connected! Server model: {health.get('model', 'unknown')}, "
+                      f"device: {health.get('device', 'unknown')}\n")
+            else:
+                print(f"⚠️  Warning: Server health check returned status {response.status_code}")
+        except Exception as e:
+            print(f"⚠️  Warning: Could not connect to remote server: {e}")
+            print("Will attempt to use it anyway...\n")
+    else:
+        # Load Whisper model locally
+        print("\n📥 Loading local Whisper model (this may take a moment)...")
+        model = whisper.load_model("base")
+        print("✓ Model loaded!\n")
 
     # Clear all LEDs at start if available
     if LED_AVAILABLE and pixels is not None:
@@ -278,8 +348,11 @@ def main():
             # Record audio
             audio = record_audio_until_enter()
 
-            # Transcribe
-            transcription = transcribe_audio(audio, model)
+            # Transcribe using appropriate method
+            if remote_server:
+                transcription = transcribe_audio_remote(audio, remote_server)
+            else:
+                transcription = transcribe_audio_local(audio, model)
 
             if not transcription:
                 print("❌ No speech detected. Please try again.")

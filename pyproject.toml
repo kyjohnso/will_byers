@@ -17,6 +17,8 @@ dependencies = [
     "scipy>=1.7.0",
     "sounddevice>=0.4.0",
     "openai-whisper>=20230314",
+    "requests>=2.25.0",
+    "flask>=2.0.0",
     "rpi-ws281x>=5.0.0; platform_machine == 'aarch64' or platform_machine == 'armv7l'",
     "adafruit-circuitpython-neopixel>=6.0.0; platform_machine == 'aarch64' or platform_machine == 'armv7l'",
 ]
@@ -24,6 +26,7 @@ dependencies = [
 [project.scripts]
 will-byers-chat = "will_byers.chat:main"
 will-byers-voice-chat = "will_byers.voice_chat:main"
+will-byers-whisper-server = "will_byers.whisper_server:main"
 will-byers-create-mapping = "will_byers.create_mapping:main"
 
 [project.urls]

@@ -103,6 +103,71 @@ sudo $(which python) -m will_byers.chat
 sudo $(which will-byers-chat)
 ```
 
+### Voice Chat
+
+Talk to Will Byers using your voice! The voice chat uses Whisper for speech-to-text transcription.
+
+#### Local Transcription (on Raspberry Pi)
+
+```bash
+# Activate your virtual environment first
+source venv/bin/activate
+
+# Run with sudo using the venv Python
+sudo $(which python) -m will_byers.voice_chat
+# Or if you installed as a script:
+sudo $(which will-byers-voice-chat)
+```
+
+#### Remote Transcription (recommended for better performance)
+
+For better performance, you can run Whisper on a separate machine with a GPU and use it as a remote transcription server:
+
+**On your GPU machine (e.g., desktop with NVIDIA GPU):**
+
+1. Install system dependencies:
+```bash
+# On Ubuntu/Debian
+sudo apt-get update
+sudo apt-get install ffmpeg
+
+# On macOS
+brew install ffmpeg
+
+# On Windows
+# Download from https://ffmpeg.org/download.html
+```
+
+2. Install the package:
+```bash
+pip install -e .
+```
+
+3. Start the Whisper server:
+```bash
+# Use the default base model
+will-byers-whisper-server
+
+# Or specify a different model and port
+will-byers-whisper-server --model medium --port 5000 --host 0.0.0.0
+```
+
+Available models: `tiny`, `base`, `small`, `medium`, `large` (larger = more accurate but slower)
+
+**On your Raspberry Pi:**
+
+```bash
+# Run voice chat with remote transcription
+sudo $(which will-byers-voice-chat) --remote-whisper http://192.168.1.100:5000
+
+# Replace 192.168.1.100 with your GPU machine's IP address
+```
+
+The remote server will:
+- Use GPU acceleration for faster transcription
+- Reduce CPU load on the Raspberry Pi
+- Provide better transcription accuracy with larger models
+
 ### Static Message Demo
 
 ```bash
@@ -136,4 +201,38 @@ python -m will_byers.chat
 4. Each letter flashes on its corresponding LED
 5. Spaces create dramatic pauses
 
+
+## Troubleshooting
+
+### Whisper Server Error: "No such file or directory: 'ffmpeg'"
+
+If you encounter this error when running the Whisper server:
+```
+❌ Error: Server returned error: 500 - {"error":"[Errno 2] No such file or directory: 'ffmpeg'"}
+```
+
+**Solution:** Install ffmpeg on your system:
+
+```bash
+# On Ubuntu/Debian
+sudo apt-get update
+sudo apt-get install ffmpeg
+
+# On macOS
+brew install ffmpeg
+
+# On Windows
+# Download from https://ffmpeg.org/download.html and add to PATH
+```
+
+After installing ffmpeg, restart the Whisper server and try again.
+
+### Verifying ffmpeg Installation
+
+To verify ffmpeg is installed correctly:
+```bash
+ffmpeg -version
+```
+
+You should see version information. If you get "command not found", ffmpeg is not installed or not in your PATH.
 Just like the show! 🎄
