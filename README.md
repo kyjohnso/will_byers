@@ -21,8 +21,46 @@ The complete build process, from planning to final installation:
 
 ## Installation
 
+### Using a Virtual Environment (Recommended for Raspberry Pi)
+
+1. Create and activate a virtual environment:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+2. Install the project and dependencies:
 ```bash
 pip install -e .
+```
+
+3. Install system-level GPIO dependencies (if not already installed):
+```bash
+sudo apt-get update
+sudo apt-get install python3-dev
+```
+
+4. Install audio dependencies (required for voice chat):
+```bash
+sudo apt-get install portaudio19-dev
+```
+
+### Running with sudo and Virtual Environment
+
+Since GPIO access requires root privileges, you need to use the virtual environment's Python interpreter with sudo:
+
+```bash
+# Get the path to your venv Python
+which python  # Should show something like /path/to/will_byers/venv/bin/python
+
+# Use that path with sudo
+sudo /path/to/will_byers/venv/bin/python -m will_byers.demos.static_messages
+```
+
+Or create an alias for convenience:
+```bash
+alias sudo-venv='sudo $(which python)'
+# Then use: sudo-venv -m will_byers.demos.static_messages
 ```
 
 ## Setup
@@ -36,14 +74,34 @@ ANTHROPIC_API_KEY=your-api-key-here
 
 ## Usage
 
-Run the interactive chat:
+### Interactive Chat
+
 ```bash
-sudo will-byers-chat
+# Activate your virtual environment first
+source venv/bin/activate
+
+# Run with sudo using the venv Python
+sudo $(which python) -m will_byers.chat
+# Or if you installed as a script:
+sudo $(which will-byers-chat)
 ```
 
-Or run the static message demo:
+### Static Message Demo
+
 ```bash
-sudo python -m will_byers.demos.static_messages
+# Activate your virtual environment first
+source venv/bin/activate
+
+# Run with sudo using the venv Python
+sudo $(which python) -m will_byers.demos.static_messages
+```
+
+### Testing Without Hardware
+
+The chat script includes graceful fallback for systems without LED hardware:
+```bash
+# No sudo needed when running without LEDs
+python -m will_byers.chat
 ```
 
 ## Hardware Requirements
