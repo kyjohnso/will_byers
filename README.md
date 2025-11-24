@@ -1,6 +1,6 @@
 # Will Byers LED Chat
 
-![Will Byers LED Demo](./assets/images/VID-20240407-WA0006_small.gif)
+<img src="./assets/images/VID-20240407-WA0006_small.gif" alt="Will Byers LED Demo" style="max-width: 800px; width: 100%;">
 
 Talk to Will Byers from Stranger Things through LED Christmas lights! This recreates the iconic scene where Will communicates from the Upside Down using individually addressable LEDs.
 
@@ -10,13 +10,16 @@ Talk to Will Byers from Stranger Things through LED Christmas lights! This recre
 
 The complete build process, from planning to final installation:
 
-![Engineering Notebook](./assets/images/engineering_notebook_entry.png)
+<img src="./assets/images/engineering_notebook_entry.png" alt="Engineering Notebook" style="max-width: 800px; width: 100%;">
+
 *Initial planning and LED mapping in the engineering notebook*
 
-![Painting the Alphabet](./assets/images/painting_the_alphabet.jpg)
+<img src="./assets/images/painting_the_alphabet.jpg" alt="Painting the Alphabet" style="max-width: 800px; width: 100%;">
+
 *Hand-painting letters on the wall for LED positioning*
 
-![Full Color Wall](./assets/images/full_color_wall.jpg)
+<img src="./assets/images/full_color_wall.jpg" alt="Full Color Wall" style="max-width: 800px; width: 100%;">
+
 *The completed installation with all LEDs positioned and tested*
 
 ## Installation
@@ -117,16 +120,18 @@ Talk to Will Byers using your voice! The voice chat uses Whisper for speech-to-t
 
 #### Wake Word Voice Chat (Hands-Free)
 
-The wake word voice chat allows you to activate Will by saying "will" (or a custom wake word). This uses Pocketsphinx for local wake word detection on the Raspberry Pi.
+The wake word voice chat allows you to activate Will by saying "will" (or a custom wake word). This uses Vosk for local wake word detection on the Raspberry Pi.
 
-**First, install Pocketsphinx:**
+**First, install Vosk:**
 ```bash
 # Activate your virtual environment first
 source venv/bin/activate
 
-# Install pocketsphinx
-pip install pocketsphinx
+# Install vosk
+pip install vosk
 ```
+
+The Vosk speech recognition model (~40MB) will be automatically downloaded on first run.
 
 **Run the wake word chat:**
 ```bash
@@ -221,7 +226,7 @@ The remote server will:
 - Reduce CPU load on the Raspberry Pi
 - Provide better transcription accuracy with larger models
 
-**Note:** The wake word detection always runs locally on the Pi (using Pocketsphinx), only the speech-to-text transcription can be offloaded to the remote server.
+**Note:** The wake word detection always runs locally on the Pi (using Vosk), only the speech-to-text transcription can be offloaded to the remote server.
 
 ### Static Message Demo
 
