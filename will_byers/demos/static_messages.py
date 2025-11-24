@@ -5,11 +5,17 @@ import board
 import neopixel
 import string
 import time
+import sys
+from pathlib import Path
+
+# Add parent directory to path to import led_config
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from led_config import load_led_mapping_with_fallback
 
 pixel_pin = board.D18
 
 # The number of NeoPixels
-num_pixels = 100
+num_pixels = 150
 
 # The order of the pixel colors - RGB or GRB. Some NeoPixels have red and green reversed!
 # For RGBW NeoPixels, simply change the ORDER to RGBW or GRBW.
@@ -19,9 +25,8 @@ pixels = neopixel.NeoPixel(
     pixel_pin, num_pixels, brightness=0.9, pixel_order=ORDER
 )
 
-char_to_pixel_map = {ch: i for i,ch in enumerate(string.ascii_lowercase)}
-
-char_to_pixel_map = {'R': 11, 'S': 15, 'T': 18, 'U': 21, 'V': 24, 'W': 27, 'X': 31, 'Y': 33, 'Z': 36, 'Q': 44, 'P': 47, 'O': 49, 'N': 50, 'M': 53, 'L': 57, 'K': 59, 'J': 62, 'I': 65, 'A': 73, 'B': 76, 'C': 80, 'D': 83, 'E': 87, 'F': 90, 'G': 92, 'H': 95}
+# Load character to LED position mapping from JSON file
+char_to_pixel_map = load_led_mapping_with_fallback()
 
 message_to_play = "   WHO IS EXCITED FOR THE LAKE DISTRICT   "
 
