@@ -24,6 +24,7 @@ dependencies = [
 [project.scripts]
 will-byers-chat = "will_byers.chat:main"
 will-byers-voice-chat = "will_byers.voice_chat:main"
+will-byers-create-mapping = "will_byers.create_mapping:main"
 
 [project.urls]
 Homepage = "https://github.com/kyjohnso/will_byers"

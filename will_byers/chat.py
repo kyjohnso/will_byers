@@ -6,6 +6,7 @@ import string
 import time
 from pathlib import Path
 from anthropic import Anthropic
+from .led_config import load_led_mapping_with_fallback
 
 # Load environment variables from .env file if it exists
 def load_env_file():
@@ -39,7 +40,7 @@ try:
 
     # LED Configuration
     pixel_pin = board.D18
-    num_pixels = 100
+    num_pixels = 150
     ORDER = neopixel.GRB
 
     pixels = neopixel.NeoPixel(
@@ -51,12 +52,8 @@ except (ImportError, NotImplementedError, RuntimeError) as e:
     print(f"LED hardware not available: {e}")
     print("Running in terminal-only mode.\n")
 
-# Character to LED position mapping (from static_messages.py)
-char_to_pixel_map = {
-    'R': 11, 'S': 15, 'T': 18, 'U': 21, 'V': 24, 'W': 27, 'X': 31, 'Y': 33, 'Z': 36,
-    'Q': 44, 'P': 47, 'O': 49, 'N': 50, 'M': 53, 'L': 57, 'K': 59, 'J': 62, 'I': 65,
-    'A': 73, 'B': 76, 'C': 80, 'D': 83, 'E': 87, 'F': 90, 'G': 92, 'H': 95
-}
+# Load character to LED position mapping from JSON file
+char_to_pixel_map = load_led_mapping_with_fallback()
 
 # Timing configuration
 seconds_per_character = 0.9

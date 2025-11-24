@@ -72,6 +72,23 @@ ANTHROPIC_API_KEY=your-api-key-here
 
 2. Wire up your LED strip to GPIO 18 on your Raspberry Pi
 
+3. Create your LED character mapping:
+```bash
+# Activate your virtual environment first
+source venv/bin/activate
+
+# Run the mapping tool with sudo (requires GPIO access)
+sudo $(which will-byers-create-mapping)
+```
+
+The mapping tool will:
+- Light up each LED position (0-149) one at a time
+- Prompt you to enter the letter at that position (or press ENTER to skip)
+- Save the mapping to `led_mapping.json` in the project root
+- Allow you to continue from where you left off if interrupted
+
+**Note:** If you don't create a custom mapping, the system will use the default hardcoded mapping from the original project.
+
 ## Usage
 
 ### Interactive Chat

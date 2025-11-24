@@ -8,8 +8,10 @@ import whisper
 import tempfile
 import time
 import threading
+import random
 from pathlib import Path
 from anthropic import Anthropic
+from .led_config import load_led_mapping_with_fallback
 
 # Load environment variables from .env file if it exists
 def load_env_file():
@@ -40,7 +42,7 @@ try:
     LED_AVAILABLE = True
 
     pixel_pin = board.D18
-    num_pixels = 100
+    num_pixels = 150
     ORDER = neopixel.GRB
 
     pixels = neopixel.NeoPixel(
@@ -52,12 +54,8 @@ except (ImportError, NotImplementedError, RuntimeError) as e:
     print(f"LED hardware not available: {e}")
     print("Running in terminal-only mode.\n")
 
-# Character to LED position mapping
-char_to_pixel_map = {
-    'R': 11, 'S': 15, 'T': 18, 'U': 21, 'V': 24, 'W': 27, 'X': 31, 'Y': 33, 'Z': 36,
-    'Q': 44, 'P': 47, 'O': 49, 'N': 50, 'M': 53, 'L': 57, 'K': 59, 'J': 62, 'I': 65,
-    'A': 73, 'B': 76, 'C': 80, 'D': 83, 'E': 87, 'F': 90, 'G': 92, 'H': 95
-}
+# Load character to LED position mapping from JSON file
+char_to_pixel_map = load_led_mapping_with_fallback()
 
 # Timing configuration
 seconds_per_character = 0.9
@@ -81,6 +79,48 @@ def play_pixel(i, color, duration):
     time.sleep(duration)
     pixels[i] = (0, 0, 0)
 
+def flash_all_lights_multicolor(times=8, duration=0.15):
+    """Flash random lights in random colors - dramatic effect for '!'."""
+    if not LED_AVAILABLE or pixels is None:
+        print("(Dramatic light flashing skipped - hardware not available)")
+        return
+
+    # Random duration between 1 and 10 seconds
+    total_duration = random.uniform(1.0, 10.0)
+    print(f"⚠️  DRAMATIC LIGHT FLASH! ({total_duration:.1f}s) ⚠️")
+    
+    flash_colors = [
+        (255, 0, 0),      # Red
+        (0, 255, 0),      # Green
+        (0, 0, 255),      # Blue
+        (255, 255, 0),    # Yellow
+        (255, 0, 255),    # Magenta
+        (0, 255, 255),    # Cyan
+        (255, 128, 0),    # Orange
+        (255, 255, 255),  # White
+    ]
+
+    # Calculate how many flashes we can fit in the duration
+    flash_duration = 0.05  # Each flash lasts 0.05 seconds
+    num_flashes = int(total_duration / flash_duration)
+    
+    # Number of random lights to change per flash (about 20-40% of total)
+    lights_per_flash = random.randint(num_pixels // 5, num_pixels // 2)
+    
+    for i in range(num_flashes):
+        # Turn off all lights first
+        pixels.fill((0, 0, 0))
+        
+        # Pick random lights and assign random colors
+        random_indices = random.sample(range(num_pixels), lights_per_flash)
+        for pixel_idx in random_indices:
+            pixels[pixel_idx] = random.choice(flash_colors)
+        
+        time.sleep(flash_duration)
+
+    pixels.fill((0, 0, 0))  # All off
+    time.sleep(0.3)  # Brief pause
+
 def flash_message(message):
     """Flash a message on the LEDs character by character."""
     if not LED_AVAILABLE or pixels is None:
@@ -93,6 +133,11 @@ def flash_message(message):
         if ch == " ":
             pixels.fill((0, 0, 0))
             time.sleep(3 * seconds_between_character)
+            continue
+
+        # Special dramatic effect for exclamation point!
+        if ch == "!":
+            flash_all_lights_multicolor(times=8, duration=0.15)
             continue
 
         if ch not in char_to_pixel_map:
@@ -176,8 +221,10 @@ def get_claude_response(user_message):
     system_prompt = (
         "You are Will Byers from the Stranger Things show, trapped in the Upside Down. "
         "You are communicating through a string of LED lights (like the Christmas lights scene). "
-        "Keep responses concise (under 50 characters when possible) and use only letters and spaces, "
-        "as these will be flashed one character at a time on individual LEDs. "
+        "Keep responses concise (under 50 characters when possible) and use only letters, spaces, and exclamation points. "
+        "When you want to express urgency, danger, or strong emotion, you can use an exclamation point (!) "
+        "which will cause ALL the lights to flash rapidly in different colors as a dramatic warning. "
+        "Use exclamation points sparingly for maximum impact - for danger, fear, or urgent warnings. "
         "Stay in character as Will - you're scared, trying to communicate with your mom and friends, "
         "but also brave and resourceful."
     )
@@ -245,7 +292,7 @@ def main():
             response = get_claude_response(transcription)
             print(f"\n💡 Will says: {response}")
 
-            # Flash the response on LEDs
+            # Flash the response on LEDs (exclamation points will trigger dramatic effect)
             if LED_AVAILABLE:
                 print("\n✨ Flashing response on LEDs...")
             flash_message(response)
