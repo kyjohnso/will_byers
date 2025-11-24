@@ -88,8 +88,8 @@ def flash_all_lights_multicolor(times=8, duration=0.15):
         print("(Dramatic light flashing skipped - hardware not available)")
         return
 
-    # Random duration between 1 and 10 seconds
-    total_duration = random.uniform(1.0, 10.0)
+    # Fixed duration between 2 and 4 seconds for dramatic effect
+    total_duration = random.uniform(2.0, 4.0)
     print(f"⚠️  DRAMATIC LIGHT FLASH! ({total_duration:.1f}s) ⚠️")
     
     flash_colors = [
@@ -103,14 +103,14 @@ def flash_all_lights_multicolor(times=8, duration=0.15):
         (255, 255, 255),  # White
     ]
 
-    # Calculate how many flashes we can fit in the duration
-    flash_duration = 0.05  # Each flash lasts 0.05 seconds
-    num_flashes = int(total_duration / flash_duration)
+    # Track actual time to ensure we don't exceed total_duration
+    start_time = time.time()
+    flash_duration = 0.08  # Each flash lasts 0.08 seconds
     
     # Number of random lights to change per flash (about 20-40% of total)
     lights_per_flash = random.randint(num_pixels // 5, num_pixels // 2)
     
-    for i in range(num_flashes):
+    while (time.time() - start_time) < total_duration:
         # Turn off all lights first
         pixels.fill((0, 0, 0))
         
