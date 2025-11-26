@@ -1,28 +1,71 @@
-# Will Byers LED Chat
-
-<img src="./assets/images/VID-20240407-WA0006_small.gif" alt="Will Byers LED Demo" style="max-width: 800px; width: 100%;">
-
-Talk to Will Byers from Stranger Things through LED Christmas lights! This recreates the iconic scene where Will communicates from the Upside Down using individually addressable LEDs.
-
-**Project History:** I originally built this in May 2022 for Stranger Things Season 4, with plans to integrate voice activation using Amazon's Alexa Gadgets API (similar to my [Alexa-enabled Lego Mindstorms maze solver](https://www.hackster.io/kyle22/dwr-an-alexa-voice-enabled-maze-solving-lego-robot-405dbf)). Unfortunately, Amazon discontinued the Alexa Gadgets API before I could complete the integration. With Season 5 on the horizon and the massive improvements in LLMs and speech-to-text technology, I decided to revisit the project—this time with Claude AI bringing Will Byers to life through natural conversation.
-
-## Build Gallery
-
-The complete build process, from planning to final installation:
-
-<img src="./assets/images/engineering_notebook_entry.png" alt="Engineering Notebook" style="max-width: 800px; width: 100%;">
-
-*Initial planning and LED mapping in the engineering notebook*
-
-<img src="./assets/images/painting_the_alphabet.jpg" alt="Painting the Alphabet" style="max-width: 800px; width: 100%;">
-
-*Hand-painting letters on the wall for LED positioning*
+# Stranger Things Wall
 
 <img src="./assets/images/full_color_wall.jpg" alt="Full Color Wall" style="max-width: 800px; width: 100%;">
 
 *The completed installation with all LEDs positioned and tested*
 
-## Installation
+A raspberry pi, WS2811 LED string, speach to text, and AI chat Stranger Things Wall - Talk to Will Byers in the upside down from the iconic Stranger Things Season 1 scene. 
+
+**Project History:** I originally built this in May 2022 for the Stranger Things Season 4 premier, with plans to integrate voice activation using Amazon's Alexa Gadgets API (similar to my [Alexa-enabled Lego Mindstorms maze solver](https://www.hackster.io/kyle22/dwr-an-alexa-voice-enabled-maze-solving-lego-robot-405dbf)). Unfortunately, Amazon discontinued the Alexa Gadgets API before I could complete the integration so I was left with the (still pretty impressive, if I say so myself!) static message generator shown in the GIF above. I could use this to print out static messages to celebrate halloween, the Season 4 premier, and I could also put in secret messages to my kids. 
+
+With Season 5 on the horizon and the massive improvements in LLMs and speech-to-text technology, I decided to revisit the project, this time using:
+* [Vosk](https://alphacephei.com/vosk/) for custom wake-word detection, 
+* [Whisper](https://github.com/openai/whisper) for speech to text, and
+* [Anthropic SDK](https://github.com/anthropics/anthropic-sdk-python) for generating Will's response
+
+The result realizes my original plan of talking to will in the Upside Down with Will replying through the Christmas Light Alphabet!
+
+## Build Gallery
+
+### Electronics
+This version of the build leveraged all of the electronics from the original 2022 build - the image below is my original engineering notebook entry with a rough circuit diagram.
+
+<img src="./assets/images/engineering_notebook_entry.png" alt="Engineering Notebook" style="max-width: 800px; width: 100%;">
+
+*Initial planning and LED mapping in the engineering notebook*
+
+I had a friend that was experimenting with the WS281x light strips which allow you to address individual lights and give a custom RGB value. I was pretty pleased to find [this version](https://www.amazon.co.uk/ruimeimei-50PCS-Addressable-Advertising-DC12V/dp/B0CW9Z7FW5/ref=sr_1_20_sspa?th=1) which were already arranged like Christmas Lights. I chose the 12v version which would allow longer light strings and potentially a bit brighter light configurations. 
+
+For the controller I chose the Raspberry Pi Model 4B and made extensive use of AdaFruit's [NeoPixel](https://docs.circuitpython.org/projects/neopixel/en/latest/) python library. Using the GPIO pins on the Pi (GPIO Pin 18 PWM) required that I convert the 3.3 V logic to 5 V logic for the lights - this was accomplished with a I2C logic converter (also shown in the diagram). A separate 12v supply for the lights and we are off and running. Because this is meant as a temporary installation, I just used a breadboard though for more permanent installations this would be a very simple PCB build or maybe as a PI hat - 
+
+<img src="./assets/images/breadboard.jpg" alt="Engineering Notebook" style="max-width: 800px; width: 100%;">
+
+*Prototype breadboard (🤫-this is still running the main display)*
+
+I used a pi GPIO breakout board to give a bit more of a sturdy connection between the breadboard and the Pi but you can just wire the appropriate pins to the board - this will work just fine.
+
+### Lettering
+Originally, we painted letters on cardboard and then cut them out allowing for us to reposition them on the wall (without having to paint over them if I forget my alphabet and make a mistake)
+
+<img src="./assets/images/painting_the_alphabet.jpg" alt="Painting the Alphabet" style="max-width: 800px; width: 100%;">
+
+*Hand-painting letters on the wall for LED positioning*
+
+<img src="./assets/images/VID-20240407-WA0006_small.gif" alt="Full Color Wall" style="max-width: 800px; width: 100%;">
+
+Between 2022 and 2025 we had our flat painted and so not even wanting celotape marks on the wall (let alone painted letters again), I decided to make a section of the wall out of thin MDF. 6ft x 2ft sections meant I had to figure out how to attach them. Some 1/2" x 2" pine strips and a staple gun did the trick.
+
+<img src="./assets/images/back_of_wall.jpg" alt="Full Color Wall" style="max-width: 800px; width: 100%;">
+
+*Joining of the MDF Sections*
+
+But, by using a separate MDF board, I was afforded the chance to make a major upgrade - 70's era floral wall paper as a background for the lettering - 
+
+<img src="./assets/images/wall_paper_closeup.jpg" alt="Full Color Wall" style="max-width: 800px; width: 100%;">
+
+*Self-adhesive wallpaper provides a key detail for this project*
+
+<img src="./assets/images/vecna_and_11.jpg" alt="Full Color Wall" style="max-width: 800px; width: 100%;">
+
+*Vecna and El*
+
+And if you use the keyboard triggered voice chat described below - you can sync with Season 1 Episode 3!
+
+[![Watch the demo](https://img.youtube.com/vi/hM04iaqw8V4/maxresdefault.jpg)](https://youtube.com/shorts/hM04iaqw8V4?feature=share)
+
+*Click to watch the Stranger Things Wall in action*
+
+## Software
 
 ### Using a Virtual Environment (Recommended for Raspberry Pi)
 

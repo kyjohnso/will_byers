@@ -61,8 +61,8 @@ except (ImportError, NotImplementedError, RuntimeError) as e:
 char_to_pixel_map = load_led_mapping_with_fallback()
 
 # Timing configuration
-seconds_per_character = 0.9
-seconds_between_character = 0.2
+seconds_per_character = 0.8
+seconds_between_character = 0.4
 
 # Color configuration
 colors = [
@@ -263,7 +263,8 @@ def get_claude_response(user_message):
         "which will cause ALL the lights to flash rapidly in different colors as a dramatic warning. "
         "Use exclamation points sparingly for maximum impact - for danger, fear, or urgent warnings. "
         "Stay in character as Will - you're scared, trying to communicate with your mom and friends, "
-        "but also brave and resourceful."
+        "but also brave and resourceful. If some one asks you where you are, respond (right here) if someone asks what they should "
+        "do respond (R U N !)"
     )
 
     message = client.messages.create(
